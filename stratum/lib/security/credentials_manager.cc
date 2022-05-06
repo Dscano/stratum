@@ -81,9 +81,9 @@ CredentialsManager::GenerateExternalFacingClientCredentials() const {
         std::make_shared<FileWatcherCertificateProvider>(
             FLAGS_client_key_file, FLAGS_client_cert_file, FLAGS_ca_cert_file,
             kFileRefreshIntervalSeconds);
-    auto tls_opts =
-        std::make_shared<TlsChannelCredentialsOptions>(certificate_provider);
-    tls_opts->set_server_verification_option(GRPC_TLS_SERVER_VERIFICATION);
+    auto tls_opts = std::make_shared<TlsChannelCredentialsOptions>();
+    tls_opts->set_certificate_provider(certificate_provider);
+    tls_opts->set_verify_server_certs(true);
     tls_opts->watch_root_certs();
     if (!FLAGS_ca_cert_file.empty() && !FLAGS_client_key_file.empty()) {
       tls_opts->watch_identity_key_cert_pairs();

@@ -31,18 +31,18 @@ def stratum_deps():
         http_archive(
             name = "com_github_grpc_grpc",
             urls = [
-                "https://github.com/grpc/grpc/archive/v1.35.0.tar.gz",
+                "https://github.com/grpc/grpc/archive/v1.45.2.tar.gz",
             ],
-            strip_prefix = "grpc-1.35.0",
-            sha256 = "27dd2fc5c9809ddcde8eb6fa1fa278a3486566dfc28335fca13eb8df8bd3b958",
+            strip_prefix = "grpc-1.45.2",
+            sha256 = "e18b16f7976aab9a36c14c38180f042bb0fd196b75c9fd6a20a2b5f934876ad6",
         )
 
     if "com_google_googleapis" not in native.existing_rules():
         http_archive(
             name = "com_google_googleapis",
-            urls = ["https://github.com/googleapis/googleapis/archive/a8cd11e2c420a194348839c6490a8a1bef2835d3.zip"],
-            strip_prefix = "googleapis-a8cd11e2c420a194348839c6490a8a1bef2835d3",
-            sha256 = "bb2b4aa6558e5125a357d829530f2bad932c6f091f0d2faaacfeec185d031ec2",
+            urls = ["https://github.com/googleapis/googleapis/archive/9b1c49de24301ba6bf1ee6462a634fffc2b97677.zip"],
+            strip_prefix = "googleapis-9b1c49de24301ba6bf1ee6462a634fffc2b97677",
+            sha256 = "2b10a2fe30a0ab4279d803ed7b3bfefb61c48fb3aa651e5f2d4899b4167b7f3b",
         )
 
     if "com_github_p4lang_p4c" not in native.existing_rules():
