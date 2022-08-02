@@ -641,6 +641,68 @@ TEST_F(BfrtTableManagerTest, RejectWriteDirectCounterEntryTypeInsertTest) {
               HasSubstr("Update type of DirectCounterEntry"));
 }
 
+TEST_F(BfrtTableManagerTest,  ReadActionProfileMemberTest) {
+  ASSERT_OK(PushTestConfig());
+  constexpr int kP4TableId = 33583783;
+  constexpr int kBfRtTableId = 20;
+  constexpr int kBfRtActSelTableId = 20;
+  constexpr int kBfRtActionProfileId = 33583783;
+  auto session_mock = std::make_shared<SessionMock>();
+  WriterMock<::p4::v1::ReadResponse> writer_mock;
+
+  {
+      EXPECT_CALL(*bf_sde_wrapper_mock_, GetBfRtId(kP4TableId))
+          .WillOnce(Return(kBfRtTableId));
+      EXPECT_CALL(*bf_sde_wrapper_mock_, GetActionSelectorBfRtId(kBfRtTableId))
+        .WillOnce(Return(kBfRtActSelTableId));
+      const int member_id = 1;
+      std::vector<int> member_ids = {1};
+      EXPECT_CALL(*bf_sde_wrapper_mock_, GetActionProfileMembers(kDevice1, _, kBfRtTableId,
+                  member_id, _, _ ))
+          .WillOnce(DoAll(SetArgPointee<4>(member_ids), 
+                          Return(::util::OkStatus())));
+
+      const std::string kActionProfileMemberResponseText = R"pb(
+      entities { 
+         action_profile_member {
+         action_profile_id: 33583783
+         member_id: 1
+         action {
+            action_id: 16783057
+            params { param_id: 1 value: "\x01" }
+            params { param_id: 2 value: "\x01" }
+         }
+        }
+      }
+      )pb";
+      ::p4::v1::ReadResponse resp;
+      ASSERT_OK(ParseProtoFromString(kActionProfileMemberResponseText, &resp));
+      const auto& entry = resp.entities(0).action_profile_member();
+      EXPECT_CALL(*bfrt_p4runtime_translator_mock_, TranslateActionProfileMember(EqualsProto(entry), false))
+        .WillOnce(Return(::util::StatusOr<::p4::v1::ActionProfileMember>(entry)));
+      EXPECT_CALL(*bf_sde_wrapper_mock_, GetActionProfileBfRtId(kBfRtActSelTableId))
+          .WillOnce(Return(kBfRtActionProfileId));
+      EXPECT_CALL(*bf_sde_wrapper_mock_, GetP4InfoId(kBfRtActSelTableId))
+          .WillOnce(Return(kBfRtActionProfileId));
+      EXPECT_CALL(writer_mock, Write(EqualsProto(resp))).WillOnce(Return(true));
+  }
+
+  const std::string kActionProfileEntryText = R"pb(
+    action_profile_id : 33583783
+    member_id : 1
+    action {
+            action_id: 16783057
+            params { param_id: 1 value: "\x01" }
+            params { param_id: 2 value: "\x01" }
+    }
+  )pb";
+  ::p4::v1::ActionProfileMember entry;
+  ASSERT_OK(ParseProtoFromString(kActionProfileEntryText, &entry));
+  EXPECT_CALL(*bfrt_p4runtime_translator_mock_, TranslateActionProfileMember(EqualsProto(entry), true))
+      .WillOnce(Return(::util::StatusOr<::p4::v1::ActionProfileMember>(entry)));
+  EXPECT_OK(bfrt_table_manager_->ReadActionProfileMember(session_mock, entry, &writer_mock));
+}
+
 }  // namespace barefoot
 }  // namespace hal
 }  // namespace stratum
