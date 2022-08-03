@@ -661,7 +661,7 @@ TEST_F(BfrtTableManagerTest,  ReadActionProfileMemberTest) {
          }
         }
       }
-      )pb";
+    )pb";
     ::p4::v1::ReadResponse resp;
     ASSERT_OK(ParseProtoFromString(kActionProfileMemberResponseText, &resp));
     const auto& entry = resp.entities(0).action_profile_member();
